@@ -1,4 +1,34 @@
+#!/bin/ bash
+#$ -pe smp 16
+#$ -l h_vmem=8G
+#$ -l h_rt=20:0:0
+#$ -cwd
+#$ -j y
+#$ -m be
+
+# Replace the following line with a program or command
+#module load python
+source /data/home/hmy984/MP/bin/activate
+
+ for file in ./*.bam
+ do
+ base=`basename $file .bam`
+
 samtools merge -o {base}_merge.bam --threads 24 -O BAM -f {base}_R1.bam {base}_R2.bam {base}_Rn.bam
 cat {base}_merge.bam | samtools sort -@ 20 > cat {base}_merge_srt.bam
 samtools index {base}_merge_srt.bam
 bamCoverage -b {base}_merge_srt.bam -o {base}_merge_srt.bw -p 20 --binSize 20 --normalizeUsing RPKM
+
+#TE-count pipeline need to install TEtools for once using conda
+ml miniforge
+conda create -n TETools
+conda activate TETools
+conda install -c biconda TEtools
+
+#Use RNAseq mapped Bam files (unmerged for replicates) for fetching TE counts at subfaily level (TEcount) or individual element level (TElocal)
+
+TEcount -b $file --GTF h_sapiens_grch38.77.gtf --TE GRCh38_Ensembl_rmsk_TE.gtf --project ${base}_TE --sortByPos
+TElocal -b $file --GTF h_sapiens_grch38.77.gtf --TE GRCh38_Ensembl_rmsk_TE.gtf.locInd --mode multi --sortByPos --project ${base}_TE_Ind
+done
+
+
