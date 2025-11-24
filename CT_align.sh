@@ -44,3 +44,37 @@ do
    bash path/to/SEACR/SEACR_1.3.sh ${base}.clean.fragments.bedgraph 0.000001 non relaxed ${base}_peaks #for relaxed peaks without IgG as background
       bash path/to/SEACR/SEACR_1.3.sh ${base}.clean.fragments.bedgraph 0.01 non stringent ${base}_peaks #for stringent peaks without IgG as background
 done
+
+
+
+------------------------------
+
+#Plotting the data using deeptools
+
+#!/bin/bash
+#$ -pe smp 16
+#$ -l h_vmem=2G
+#$ -l h_rt=1:0:0
+#$ -cwd
+#$ -j y
+#$ -m be
+
+ml miniforge
+conda activate Deeptools
+
+computeMatrix reference-point --referencePoint TSS -S CUT_n_Tag1.bw CUT_n_Tag2.bw CUT_n_Tag_n.bw -bed Genes.bed -o Genes_CUT_n_Tag_sig.gz -a 5000 -b 5000 -bs 20 --skipZeros -p 20
+#(-S bigwigs to use, -R bed files (regions) for plotting, -a nd -b distance from the TSS in bases, -p number of processors -bs binsize for counting signal)
+plotHeatmap -m Genes_CUT_n_Tag_sig.gz -o Genes_CUT_n_Tag_sig.pdf --missingDataColor none -max value -min value --dpi 300 --colorList list_of_colors_to_plot or colorMap
+#Generates heatmap from the matrix output of computeMatrix. 
+plotProfile -m Genes_CUT_n_Tag_sig.gz -o Genes_CUT_n_Tag_sig_pro.pdf 
+#Generates metasummary plot from the matrix output of computeMatrix. 
+
+#QC_and_correlation_using_multiBam_or_multiBiwgwig_summary
+multiBamSummary bins -b CUT_n_Tag1.bam CUT_n_Tag2.bam CUT_n_Tagn.bam -o CUT_n_Tag_mutliBam_summ.npz -p 16 --smartLabels
+#generates correlation matrix for the bam ffiles used as input which can be plotted as PCA or correlation plots
+ plotCorrelation --corData CUT_n_Tag_mutliBam_summ.npz --corMethod spearman or pearson --whatToPlot heatmap --skipZeros --plotNumbers -o CUT_n_Tag_mutliBam_summ_corr.pdf
+
+ 
+
+
+ 
