@@ -1,0 +1,4 @@
+samtools merge -o {base}_merge.bam --threads 24 -O BAM -f {base}_R1.bam {base}_R2.bam {base}_Rn.bam
+cat {base}_merge.bam | samtools sort -@ 20 > cat {base}_merge_srt.bam
+samtools index {base}_merge_srt.bam
+bamCoverage -b {base}_merge_srt.bam -o {base}_merge_srt.bw -p 20 --binSize 20 --normalizeUsing RPKM
