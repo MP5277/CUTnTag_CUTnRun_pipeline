@@ -1,0 +1,25 @@
+#!/bin/bash
+#$ -pe smp 20
+#$ -l h_vmem=2G
+#$ -l h_rt=1:0:0
+#$ -cwd 
+#$ -j y
+#$ -N HT_RNA_Align
+#$ -m be
+
+ Replace the following line with a program or command
+module load python
+module load star/2.7.0f
+
+ for file in ./*fq.gz
+ do
+ base=`basename $file L5_1.fq.gz`
+
+ STAR --runThreadN 28 --readFilesCommand zcat --peOverlapNbasesMin 40 --peOverlapMMp 0.8 --genomeDir /data/Blizard-CGH-MadapuraLab/TTSEQ_Nov2021/Genome_dir/ --readFilesIn ${base}L5_1.fq.gz ${base}L
+5_2.fq.gz --outFilterType BySJout --outFilterMultimapNmax 200 --alignSJoverhangMin 8 --alignSJDBoverhangMin 1 --outFilterMismatchNmax 999 --outFilterMismatchNoverLmax 0.6 --alignIntronMin 20 --alig
+nIntronMax 1000000 --limitOutSJcollapsed 5000000 --outSAMattributes NH HI NM --outSAMtype BAM Unsorted --outFileNamePrefix ${base}_RNA --outTmpDir ${base}_temp --seedPerWindowNmax 10 
+
+ cat ${base}_RNAAligned.out.bam | samtools sort -@ 20 > ${base}srt.bam
+ samtools index ${base}srt.bam
+ bamCoverage -b ${base}srt.bam -o ${base}srt.bw -p 20 --binSize 20 --normalizeUsing RPKM --smoothLength 60  --centerReads --scaleFactor
+ done 
