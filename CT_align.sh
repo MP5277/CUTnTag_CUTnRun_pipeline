@@ -7,8 +7,11 @@
 #$ -N Alignment_CT
 #$ -m be
 
-source /data/path/to/env/bin/activate
-
+#need to install deeptools in your conda or python environment
+#ml miniforge
+#conda create -n Deeptools
+#conda install -c bioconda deepTools
+#conda acyivate Deeptools
 module load trimmomatic/
 module load bowtie2/
 module load samtools
@@ -33,6 +36,11 @@ do
   bedtools bamtobed -bedpe -i ${base}_byname.bam > ${base}.bed
   awk '$1==$4 && $6-$2 < 1000 {print $0}' ${base}.bed > ${base}.clean.bed
   cut -f 1,2,6 ${base}.clean.bed | sort -k1,1 -k2,2n -k3,3n > ${base}.clean.fragments.bed
-  bedtools genomecov -bg -i ${base}.clean.fragments.bed -g ./hg38.chrom.sizes > ${base}.clean.fragments.bedgraph  
-  bamCoverage -b ${base}aln_sorted.bam -o ${base}aln_sorted.bw --skipNAs --smoothLength 60 --centerReads -p 24 --normalizeUsing CPM
+  bedtools genomecov -bg -i ${base}.clean.fragments.bed -g ./hg38.chrom.sizes > ${base}.clean.fragments.bedgraph  #bedgraphs needed for peak calling using SEACR
+  bamCoverage -b ${base}aln_sorted.bam -o ${base}aln_sorted.bw --skipNAs --smoothLength 60 --centerReads -p 24 --normalizeUsing CPM #bigwig files
+
+  #Peak-calling using SEACR
+  ml R
+   bash path/to/SEACR/SEACR_1.3.sh ${base}.clean.fragments.bedgraph 0.000001 non relaxed ${base}_peaks #for relaxed peaks without IgG as background
+      bash path/to/SEACR/SEACR_1.3.sh ${base}.clean.fragments.bedgraph 0.01 non stringent ${base}_peaks #for stringent peaks without IgG as background
 done
