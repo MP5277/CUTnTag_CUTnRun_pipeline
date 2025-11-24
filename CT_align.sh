@@ -71,7 +71,7 @@ plotProfile -m Genes_CUT_n_Tag_sig.gz -o Genes_CUT_n_Tag_sig_pro.pdf
 
 #QC_and_correlation_using_multiBam_or_multiBiwgwig_summary
 multiBamSummary bins -b CUT_n_Tag1.bam CUT_n_Tag2.bam CUT_n_Tagn.bam -o CUT_n_Tag_mutliBam_summ.npz -p 16 --smartLabels
-#generates correlation matrix for the bam ffiles used as input which can be plotted as PCA or correlation plots
+#generates correlation matrix for the bam files used as input which can be plotted as PCA or correlation plots
  plotCorrelation --corData CUT_n_Tag_mutliBam_summ.npz --corMethod spearman or pearson --whatToPlot heatmap --skipZeros --plotNumbers -o CUT_n_Tag_mutliBam_summ_corr.pdf
 
  
